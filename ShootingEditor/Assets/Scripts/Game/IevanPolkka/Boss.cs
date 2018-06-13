@@ -31,25 +31,25 @@ namespace Game
                 _Logic._coroutineManager.StartCoroutine(_Logic.MoveConstantVelocity(this, new Vector2(0.0f, 0.75f), 30));
                 yield return new WaitForFrames(30);
 
-                _Logic._coroutineManager.StartCoroutine(_Logic.SideAim(0, 0.02f, 30, 2));
+                _Logic._coroutineManager.StartCoroutine(_Logic.ShotFormBorder(0, 0.02f, 30, 2));
                 yield return new WaitForFrames(60);
                 //
-                _Logic._coroutineManager.StartCoroutine(_Logic.SideAim(1, 0.02f, 30, 2));
+                _Logic._coroutineManager.StartCoroutine(_Logic.ShotFormBorder(1, 0.02f, 30, 2));
                 yield return new WaitForFrames(60);
                 // 
                 _Logic._coroutineManager.StartCoroutine(_Logic.MoveConstantVelocity(this, new Vector2(-0.8f, 0.75f), 120));
-                _Logic._coroutineManager.StartCoroutine(_Logic.SideAim(2, 0.02f, 30, 2));
+                _Logic._coroutineManager.StartCoroutine(_Logic.ShotFormBorder(2, 0.02f, 30, 2));
                 yield return new WaitForFrames(120);
                 // 
                 _Logic._coroutineManager.StartCoroutine(_Logic.MoveConstantVelocity(this, new Vector2(0.8f, 0.75f), 240));
-                _Logic._coroutineManager.StartCoroutine(_Logic.SideAim(3, 0.02f, 30, 2));
+                _Logic._coroutineManager.StartCoroutine(_Logic.ShotFormBorder(3, 0.02f, 30, 2));
                 yield return new WaitForFrames(120);
                 //
-                _Logic._coroutineManager.StartCoroutine(_Logic.CornerAim(0.02f, 30, 2));
+                _Logic._coroutineManager.StartCoroutine(_Logic.ShotFormCorner(0.02f, 30, 2));
                 yield return new WaitForFrames(120);
                 //
                 _Logic._coroutineManager.StartCoroutine(_Logic.MoveConstantVelocity(this, new Vector2(0.0f, 0.75f), 120));
-                _Logic._coroutineManager.StartCoroutine(_Logic.CornerAim(0.02f, 30, 2));
+                _Logic._coroutineManager.StartCoroutine(_Logic.ShotFormCorner(0.02f, 30, 2));
                 yield return new WaitForFrames(120);
                 //
                 yield return new WaitForFrames(120);
@@ -96,7 +96,7 @@ namespace Game
                 // 야바린간
                 yield return new WaitForAbsFrames(1080);
                 _Logic._coroutineManager.StartCoroutine(_Logic.CircleBullets(this, BulletName.blue, 0.25f, 0.01f, 20, true, 60, 8));
-                _Logic._coroutineManager.StartCoroutine(_Logic.CornerAim(0.02f, 60, 2));
+                _Logic._coroutineManager.StartCoroutine(_Logic.ShotFormCorner(0.02f, 60, 2));
 
                 // 아야챠챠
                 yield return new WaitForAbsFrames(1590);
@@ -110,68 +110,68 @@ namespace Game
                 _Logic._coroutineManager.StartCoroutine(_Logic.MoveConstantVelocity(this, new Vector2(0.0f, 0.75f), 60));
                 ///
                 yield return new WaitForAbsFrames(2650);
-                _Logic._coroutineManager.StartCoroutine(_Logic.Simple3Wave(true));
+                _Logic._coroutineManager.StartCoroutine(_Logic.Simple3Wave(this, true));
 
                 yield return new WaitForAbsFrames(2690);
-                _Logic._coroutineManager.StartCoroutine(_Logic.Simple3Wave(false));
+                _Logic._coroutineManager.StartCoroutine(_Logic.Simple3Wave(this, false));
 
                 yield return new WaitForAbsFrames(2800);
                 _Logic._coroutineManager.StartCoroutine(_Logic.Simple4Wave());
                 _Logic._coroutineManager.StartCoroutine(_Logic.MoveConstantVelocity(this, new Vector2(0.0f, 0.5f), 75));
 
                 yield return new WaitForAbsFrames(2900);
-                _Logic._coroutineManager.StartCoroutine(_Logic.SimpleCircles());
+                _Logic._coroutineManager.StartCoroutine(_Logic.SimpleCircles(this));
 
                 yield return new WaitForAbsFrames(3020);
-                _Logic._coroutineManager.StartCoroutine(_Logic.AimAfterSimpleCircles());
+                _Logic._coroutineManager.StartCoroutine(_Logic.AimAfterSimpleCircles(this));
 
                 yield return new WaitForAbsFrames(3350);
                 // 왼쪽 코너로 이동
                 _Logic._coroutineManager.StartCoroutine(_Logic.MoveDamp(this, new Vector2(-0.6f, 0.75f), 30, 0.1f));
 
                 yield return new WaitForAbsFrames(3440);
-                _Logic._coroutineManager.StartCoroutine(_Logic.CornerWaves(true));
+                _Logic._coroutineManager.StartCoroutine(_Logic.CornerWaves(this, true));
 
                 yield return new WaitForAbsFrames(3780);
                 // 오른쪽 코너로 이동
                 _Logic._coroutineManager.StartCoroutine(_Logic.MoveDamp(this, new Vector2(0.6f, 0.75f), 60, 0.1f));
 
                 yield return new WaitForAbsFrames(3870);
-                _Logic._coroutineManager.StartCoroutine(_Logic.CornerWaves(false));
+                _Logic._coroutineManager.StartCoroutine(_Logic.CornerWaves(this, false));
 
                 yield return new WaitForAbsFrames(4210);
                 // 중앙으로 이동
                 _Logic._coroutineManager.StartCoroutine(_Logic.MoveDamp(this, new Vector2(0.0f, 0.0f), 40, 0.1f));
 
                 yield return new WaitForAbsFrames(4300);
-                _Logic._coroutineManager.StartCoroutine(_Logic.RotateCrossTwice1());
+                _Logic._coroutineManager.StartCoroutine(_Logic.RotateCrossTwice1(this));
 
                 yield return new WaitForAbsFrames(5130);
-                _Logic._coroutineManager.StartCoroutine(_Logic.BackwardStep());
+                _Logic._coroutineManager.StartCoroutine(_Logic.BackwardStep(this));
 
                 yield return new WaitForAbsFrames(5575);
-                _Logic._coroutineManager.StartCoroutine(_Logic.PigeonSolo());
+                _Logic._coroutineManager.StartCoroutine(_Logic.PigeonSolo(this));
 
                 yield return new WaitForAbsFrames(7250);
                 // 왼쪽 코너로 이동
                 _Logic._coroutineManager.StartCoroutine(_Logic.MoveDamp(this, new Vector2(-0.6f, 0.75f), 30, 0.1f));
 
                 yield return new WaitForAbsFrames(7280);
-                _Logic._coroutineManager.StartCoroutine(_Logic.CornerWaves(true));
+                _Logic._coroutineManager.StartCoroutine(_Logic.CornerWaves(this, true));
 
                 yield return new WaitForAbsFrames(7620);
                 // 오른쪽 코너로 이동
                 _Logic._coroutineManager.StartCoroutine(_Logic.MoveDamp(this, new Vector2(0.6f, 0.75f), 60, 0.1f));
 
                 yield return new WaitForAbsFrames(7710);
-                _Logic._coroutineManager.StartCoroutine(_Logic.CornerWaves(false));
+                _Logic._coroutineManager.StartCoroutine(_Logic.CornerWaves(this, false));
 
                 yield return new WaitForAbsFrames(8050);
                 // 중앙으로 이동
                 _Logic._coroutineManager.StartCoroutine(_Logic.MoveDamp(this, new Vector2(0.0f, 0.0f), 40, 0.1f));
 
                 yield return new WaitForAbsFrames(8140);
-                _Logic._coroutineManager.StartCoroutine(_Logic.RotateCrossTwice2());
+                _Logic._coroutineManager.StartCoroutine(_Logic.RotateCrossTwice2(this));
                 ///
 
                 yield return new WaitForAbsFrames(8960);

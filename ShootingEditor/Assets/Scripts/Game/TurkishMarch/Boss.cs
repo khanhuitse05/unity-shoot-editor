@@ -30,25 +30,25 @@ namespace Game
                 _Logic._coroutineManager.StartCoroutine(_Logic.MoveConstantVelocity(this, new Vector2(0.0f, 0.75f), 40));
                 
                 yield return new WaitForAbsFrames(90);
-                _Logic._coroutineManager.StartCoroutine(_Logic.PatternA_11());
+                _Logic._coroutineManager.StartCoroutine(_Logic.Pattern_A_11(this));
                 yield return new WaitForAbsFrames(511);
-                _Logic._coroutineManager.StartCoroutine(_Logic.PatternA_11());
+                _Logic._coroutineManager.StartCoroutine(_Logic.Pattern_A_11(this));
                 yield return new WaitForAbsFrames(935);
-                _Logic._coroutineManager.StartCoroutine(_Logic.PatternB());
+                _Logic._coroutineManager.StartCoroutine(_Logic.PatternB(this));
                 yield return new WaitForAbsFrames(1370);
-                _Logic._coroutineManager.StartCoroutine(_Logic.PatternA_22());
+                _Logic._coroutineManager.StartCoroutine(_Logic.PatternA_22(this));
                 yield return new WaitForAbsFrames(1800);
-                _Logic._coroutineManager.StartCoroutine(_Logic.PatternB());
+                _Logic._coroutineManager.StartCoroutine(_Logic.PatternB(this));
                 yield return new WaitForAbsFrames(2235);
-                _Logic._coroutineManager.StartCoroutine(_Logic.PatternA_22());
+                _Logic._coroutineManager.StartCoroutine(_Logic.PatternA_22(this));
                 yield return new WaitForAbsFrames(2670);
-                _Logic._coroutineManager.StartCoroutine(_Logic.PatternC_1());
+                _Logic._coroutineManager.StartCoroutine(_Logic.PatternC_1(this));
                 yield return new WaitForAbsFrames(3590);
-                _Logic._coroutineManager.StartCoroutine(_Logic.PatternD_1());
+                _Logic._coroutineManager.StartCoroutine(_Logic.PatternD_1(this));
                 yield return new WaitForAbsFrames(5270);
-                _Logic._coroutineManager.StartCoroutine(_Logic.PatternD_2());
+                _Logic._coroutineManager.StartCoroutine(_Logic.PatternD_2(this));
                 yield return new WaitForAbsFrames(6170);
-                _Logic._coroutineManager.StartCoroutine(_Logic.PatternC_2());
+                _Logic._coroutineManager.StartCoroutine(_Logic.PatternC_2(this));
                 
                 yield return new WaitForAbsFrames(7100);
                 // 패턴E 빠져나올 수 있을만큼 위로

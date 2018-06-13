@@ -764,5 +764,13 @@ namespace Game
             }
         }
         #endregion // Debug
+
+
+        [SerializeField]
+        private Text _txtNote;
+        public static void SetNote(string _message)
+        {
+            _Instance._txtNote.text = _message;
+        }
     }
 }

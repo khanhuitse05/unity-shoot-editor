@@ -15,8 +15,6 @@ namespace Game
         // 특화 정보 갱신
         public abstract void UpdatePlayContext();
 
-        protected Enemy boss;
-
         // 기본 플레이어기 로딩
         protected IEnumerator LoadBasicPlayer()
         {
@@ -62,7 +60,7 @@ namespace Game
 
         #region Move
         /// <summary>
-        /// 무버를 지정한 위치까지 등속 이동
+        /// Move to pos
         /// </summary>
         public IEnumerator MoveConstantVelocity(Mover mover, Vector2 arrivePos, int duration)
         {
@@ -74,12 +72,12 @@ namespace Game
                 yield return null;
             }
 
-            // 마지막 프레임
+            // Finish
             mover._pos = arrivePos;
         }
 
         /// <summary>
-        /// 무버를 지정한 위치까지 비례감속 이동
+        /// Move to pos with acceleration
         /// </summary>
         public IEnumerator MoveDamp(Mover mover, Vector2 arrivePos, int duration, float damp)
         {
@@ -89,18 +87,51 @@ namespace Game
                 yield return null;
             }
 
-            // 마지막 프레임
+            // Finish
             mover._pos = arrivePos;
         }
 
+        /// <summary>
+        /// Nonstop Dancing
+        /// </summary>
+        public IEnumerator Shake(Mover mover, Vector2 pivot, int interval)
+        {
+            const float pivotOffset = 0.1f;
+            // 마마마 린간 덴간
+            _coroutineManager.StartCoroutine(MoveConstantVelocity(mover, new Vector2(pivot.x + pivotOffset, pivot.y), 30));
+            yield return new WaitForFrames(75);
+            // 린간 덴간
+            _coroutineManager.StartCoroutine(MoveConstantVelocity(mover, new Vector2(pivot.x - pivotOffset, pivot.y), 30));
+            yield return new WaitForFrames(75);
+            // 린간
+            _coroutineManager.StartCoroutine(MoveConstantVelocity(mover, new Vector2(pivot.x + pivotOffset, pivot.y), 15));
+            yield return new WaitForFrames(30);
+            // 린간
+            _coroutineManager.StartCoroutine(MoveConstantVelocity(mover, new Vector2(pivot.x, pivot.y), 15));
+            yield return new WaitForFrames(30);
+
+            const float shakeOffset = 0.03f;
+            for (int i = 0; i < 8; ++i)
+            {
+                mover._pos = new Vector2(pivot.x + shakeOffset, pivot.y);
+                yield return new WaitForFrames(interval);
+                mover._pos = new Vector2(pivot.x, pivot.y + shakeOffset);
+                yield return new WaitForFrames(interval);
+                mover._pos = new Vector2(pivot.x - shakeOffset, pivot.y);
+                yield return new WaitForFrames(interval);
+                mover._pos = new Vector2(pivot.x, pivot.y - shakeOffset);
+                yield return new WaitForFrames(interval);
+            }
+            mover._pos = new Vector2(pivot.x, pivot.y);
+        }
         #endregion
 
         #region Base
         /// <summary>
-        /// 사면에서 직각방향으로 발사되는 시작위치 조준탄
+        /// Shot form 
         /// </summary>
-        /// <param name="dir">시작방향. 0:상, 1:하, 2:좌, 3: 우</param>
-        public IEnumerator SideAim(int dir, float speed, int interval, int count)
+        /// <param name="dir">Direction. 0:Up, 1:Down, 2:Left, 3:Right</param>
+        public IEnumerator ShotFormBorder(int dir, float speed, int interval, int count)
         {
             for (int i = 0; i < count; ++i)
             {
@@ -141,11 +172,10 @@ namespace Game
         }
 
         /// <summary>
-        /// 모서리에서 플레이어 방향으로 발사되는 조준탄
+        /// Shot form 
         /// </summary>
-        /// <param name="interval">탄별 간격</interval>
-        /// <param name="roundCount">4모서리 순회를 몇 번 할 것인가</param>
-        public IEnumerator CornerAim(float speed, int interval, int roundCount)
+        /// <param name="roundCount">4 shot per time</param>
+        public IEnumerator ShotFormCorner(float speed, int interval, int roundCount)
         {
             for (int i = 0; i < roundCount; ++i)
             {
@@ -186,52 +216,6 @@ namespace Game
             }
         }
         
-        /// <summary>
-        /// N-Way 탄
-        /// </summary>
-        public void NWayBullet(Mover mover, string shape, float angle, float angleRange, float speed, int count)
-        {
-            if (count > 1)
-            {
-                for (int i = 0; i < count; ++i)
-                {
-                    // (angle - angleRange / 2) ~ (angle + angleRange / 2) 범위에서 count 만큼 생성
-                    Bullet b = GameSystem._Instance.CreateBullet<Bullet>();
-                    b.Init(shape, mover._X, mover._Y, angle + angleRange * ((float)i / (count - 1) - 0.5f), 0.0f, speed, 0.0f);
-                }
-            }
-            else if (count == 1)
-            {
-                // 탄 수가 하나일 때는 발사 각도로 1개 발사
-                Bullet b = GameSystem._Instance.CreateBullet<Bullet>();
-                b.Init(shape, mover._X, mover._Y, angle, 0.0f, speed, 0.0f);
-            }
-        }
-
-        /// <summary>
-        /// 무작위로 구멍 뚫린 N-Way
-        /// </summary>
-        public IEnumerator GapBullets(Mover mover, string shape, float angleRange, float speed, int count
-            , int interval, int repeatCount)
-        {
-            for (int i = 0; i < repeatCount; ++i)
-            {
-                float angle = GameSystem._Instance.GetRandom01();
-                NWayBullet(mover, shape, angle, angleRange, speed, count);
-                yield return new WaitForFrames(interval);
-            }
-        }
-
-        public IEnumerator CustomGapBullets(Mover mover, string shape, float angleRange, float speed, int count
-            , int interval, float[] angles)
-        {
-            for (int i = 0; i < angles.Length; ++i)
-            {
-                NWayBullet(mover, shape, angles[i], angleRange, speed, count);
-                yield return new WaitForFrames(interval);
-            }
-        }
-
         /// <summary>
         /// 원형탄
         /// </summary>
@@ -321,6 +305,53 @@ namespace Game
                 yield return new WaitForFrames(interval);
             }
         }
+
+        /// <summary>
+        /// N-Way 탄
+        /// </summary>
+        public void NWayBullet(Mover mover, string shape, float angle, float angleRange, float speed, int count)
+        {
+            if (count > 1)
+            {
+                for (int i = 0; i < count; ++i)
+                {
+                    // (angle - angleRange / 2) ~ (angle + angleRange / 2) 범위에서 count 만큼 생성
+                    Bullet b = GameSystem._Instance.CreateBullet<Bullet>();
+                    b.Init(shape, mover._X, mover._Y, angle + angleRange * ((float)i / (count - 1) - 0.5f), 0.0f, speed, 0.0f);
+                }
+            }
+            else if (count == 1)
+            {
+                // 탄 수가 하나일 때는 발사 각도로 1개 발사
+                Bullet b = GameSystem._Instance.CreateBullet<Bullet>();
+                b.Init(shape, mover._X, mover._Y, angle, 0.0f, speed, 0.0f);
+            }
+        }
+
+        /// <summary>
+        /// 무작위로 구멍 뚫린 N-Way
+        /// </summary>
+        public IEnumerator GapBullets(Mover mover, string shape, float angleRange, float speed, int count
+            , int interval, int repeatCount)
+        {
+            for (int i = 0; i < repeatCount; ++i)
+            {
+                float angle = GameSystem._Instance.GetRandom01();
+                NWayBullet(mover, shape, angle, angleRange, speed, count);
+                yield return new WaitForFrames(interval);
+            }
+        }
+
+        public IEnumerator CustomGapBullets(Mover mover, string shape, float angleRange, float speed, int count
+            , int interval, float[] angles)
+        {
+            for (int i = 0; i < angles.Length; ++i)
+            {
+                NWayBullet(mover, shape, angles[i], angleRange, speed, count);
+                yield return new WaitForFrames(interval);
+            }
+        }
+
 
         /// <summary>
         /// 소용돌이탄
@@ -607,24 +638,24 @@ namespace Game
             Bullet b = GameSystem._Instance.CreateBullet<Bullet>();
             b.Init(shape, mover._X, mover._Y, GetPlayerAngle(mover), 0.0f, speed, 0.0f);
         }
-        #endregion Pattern
+        #endregion Base
 
         #region Pattern 1
         // 단순 3파
-        public IEnumerator Simple3Wave(bool leftToRight)
+        public IEnumerator Simple3Wave(Mover mover, bool leftToRight)
         {
             // 1파
             Bullet b = GameSystem._Instance.CreateBullet<Bullet>();
-            b.Init(BulletName.blue, boss._X, boss._Y, 0.75f
+            b.Init(BulletName.blue, mover._X, mover._Y, 0.75f
                 , 0.0f, 0.02f, 0.0f);
             yield return new WaitForFrames(11);
 
             // 2파
             b = GameSystem._Instance.CreateBullet<Bullet>();
-            b.Init(BulletName.blue, boss._X - 0.2f, boss._Y, 0.75f
+            b.Init(BulletName.blue, mover._X - 0.2f, mover._Y, 0.75f
                 , 0.0f, 0.02f, 0.0f);
             b = GameSystem._Instance.CreateBullet<Bullet>();
-            b.Init(BulletName.blue, boss._X + 0.2f, boss._Y, 0.75f
+            b.Init(BulletName.blue, mover._X + 0.2f, mover._Y, 0.75f
                 , 0.0f, 0.02f, 0.0f);
             yield return new WaitForFrames(12);
 
@@ -637,7 +668,7 @@ namespace Game
             for (int i = 0; i < count; ++i)
             {
                 b = GameSystem._Instance.CreateBullet<Bullet>();
-                b.Init(BulletName.blue, boss._X, boss._Y, (startAngle + (endAngle - startAngle) / count * i)
+                b.Init(BulletName.blue, mover._X, mover._Y, (startAngle + (endAngle - startAngle) / count * i)
                     , 0.0f, 0.02f, 0.0f);
 
                 if (i < count - 1)
@@ -681,13 +712,13 @@ namespace Game
         }
 
         // 단순 원형 연속
-        public IEnumerator SimpleCircles()
+        public IEnumerator SimpleCircles(Mover mover)
         {
             const int count = 9;
             for (int i = 0; i < count; ++i)
             {
                 bool halfAngleOffset = (i % 2) != 0;
-                CircleBullet(boss, BulletName.blue, 0.0f, 0.005f, 20, halfAngleOffset);
+                CircleBullet(mover, BulletName.blue, 0.0f, 0.005f, 20, halfAngleOffset);
 
                 if (i < count - 1)
                 {
@@ -696,14 +727,14 @@ namespace Game
             }
         }
 
-        public IEnumerator AimAfterSimpleCircles()
+        public IEnumerator AimAfterSimpleCircles(Mover mover)
         {
             const int count = 6;
             for (int i = 0; i < count; ++i)
             {
-                float playerAngle = GetPlayerAngle(boss);
+                float playerAngle = GetPlayerAngle(mover);
                 Bullet b = GameSystem._Instance.CreateBullet<Bullet>();
-                b.Init(BulletName.red, boss._X, boss._Y, playerAngle
+                b.Init(BulletName.red, mover._X, mover._Y, playerAngle
                     , 0.0f, 0.02f, 0.0f);
 
                 if (i < count - 1)
@@ -714,12 +745,12 @@ namespace Game
         }
 
         // 각 모서리에서 진행할 웨이브들
-        public IEnumerator CornerWaves(bool leftCorner)
+        public IEnumerator CornerWaves(Mover mover, bool leftCorner)
         {
             // 2파 1
-            yield return _coroutineManager.StartCoroutine(CornerWaves_2Wave(leftCorner));
+            yield return _coroutineManager.StartCoroutine(CornerWaves_2Wave(mover, leftCorner));
             // 3파 2
-            yield return _coroutineManager.StartCoroutine(CornerWaves_2Wave(leftCorner));
+            yield return _coroutineManager.StartCoroutine(CornerWaves_2Wave(mover, leftCorner));
             // 4파
             {
                 float x = (leftCorner) ? 1.0f : -1.0f;
@@ -733,45 +764,45 @@ namespace Game
                 }
             }
             // 연타
-            CircleBullet(boss, BulletName.blue, 0.0f, 0.02f, 12, false);
+            CircleBullet(mover, BulletName.blue, 0.0f, 0.02f, 12, false);
             yield return new WaitForFrames(26);
-            CircleBullet(boss, BulletName.blue, 0.0f, 0.02f, 12, true);
+            CircleBullet(mover, BulletName.blue, 0.0f, 0.02f, 12, true);
         }
 
-        public IEnumerator CornerWaves_2Wave(bool leftCorner)
+        public IEnumerator CornerWaves_2Wave(Mover mover, bool leftCorner)
         {
             // 1탄
             Bullet b = GameSystem._Instance.CreateBullet<Bullet>();
-            b.Init(BulletName.blue, boss._X, boss._Y, 0.75f
+            b.Init(BulletName.blue, mover._X, mover._Y, 0.75f
                 , 0.0f, 0.02f, 0.0f);
             yield return new WaitForFrames(32);
 
             float angle = ((leftCorner) ? 0.875f : 0.625f);
-            NWayBullet(boss, BulletName.blue, angle, 0.25f, 0.02f, 6);
+            NWayBullet(mover, BulletName.blue, angle, 0.25f, 0.02f, 6);
             yield return new WaitForFrames(75);
         }
 
-        public IEnumerator RotateCrossTwice1()
+        public IEnumerator RotateCrossTwice1(Mover mover)
         {
             const int repeatCount = 4;
             const int interval = 105;
-            _coroutineManager.StartCoroutine(RotateCrossTwice_DirectionShot(false, repeatCount, interval));
-            yield return _coroutineManager.StartCoroutine(MultipleSpiralBullets(boss, BulletName.blue, 0.125f, 0.005f, 0.05f, 4, 2, 410));
-            _coroutineManager.StartCoroutine(RotateCrossTwice_DirectionShot(true, repeatCount, interval));
-            yield return _coroutineManager.StartCoroutine(MultipleSpiralBullets(boss, BulletName.blue, 0.125f, -0.005f, 0.05f, 4, 2, 410));
+            _coroutineManager.StartCoroutine(RotateCrossTwice_DirectionShot(mover, false, repeatCount, interval));
+            yield return _coroutineManager.StartCoroutine(MultipleSpiralBullets(mover, BulletName.blue, 0.125f, 0.005f, 0.05f, 4, 2, 410));
+            _coroutineManager.StartCoroutine(RotateCrossTwice_DirectionShot(mover, true, repeatCount, interval));
+            yield return _coroutineManager.StartCoroutine(MultipleSpiralBullets(mover, BulletName.blue, 0.125f, -0.005f, 0.05f, 4, 2, 410));
         }
 
-        public IEnumerator RotateCrossTwice2()
+        public IEnumerator RotateCrossTwice2(Mover mover)
         {
             const int repeatCount = 4 * 2;
             const int interval = 105 / 2;
-            _coroutineManager.StartCoroutine(RotateCrossTwice_DirectionShot(false, repeatCount, interval));
-            yield return _coroutineManager.StartCoroutine(MultipleSpiralBullets(boss, BulletName.blue, 0.125f, 0.005f, 0.05f, 4, 2, 410));
-            _coroutineManager.StartCoroutine(RotateCrossTwice_DirectionShot(true, repeatCount, interval));
-            yield return _coroutineManager.StartCoroutine(MultipleSpiralBullets(boss, BulletName.blue, 0.125f, -0.005f, 0.05f, 4, 2, 410));
+            _coroutineManager.StartCoroutine(RotateCrossTwice_DirectionShot(mover, false, repeatCount, interval));
+            yield return _coroutineManager.StartCoroutine(MultipleSpiralBullets(mover, BulletName.blue, 0.125f, 0.005f, 0.05f, 4, 2, 410));
+            _coroutineManager.StartCoroutine(RotateCrossTwice_DirectionShot(mover, true, repeatCount, interval));
+            yield return _coroutineManager.StartCoroutine(MultipleSpiralBullets(mover, BulletName.blue, 0.125f, -0.005f, 0.05f, 4, 2, 410));
         }
 
-        public IEnumerator RotateCrossTwice_DirectionShot(bool clockwise, int repeatCount, int interval)
+        public IEnumerator RotateCrossTwice_DirectionShot(Mover mover, bool clockwise, int repeatCount, int interval)
         {
             const int directionCount = 4;
             const float startAngle = 0.75f;
@@ -779,7 +810,7 @@ namespace Game
             for (int i = 0; i < repeatCount; ++i)
             {
                 float angle = startAngle + (1.0f / (float)repeatCount) * (float)i * (clockwise ? -1.0f : 1.0f);
-                NWayBullet(boss, BulletName.red, angle, angleRange, 0.01f, directionCount);
+                NWayBullet(mover, BulletName.red, angle, angleRange, 0.01f, directionCount);
 
                 if (i < repeatCount - 1)
                 {
@@ -788,10 +819,10 @@ namespace Game
             }
         }
 
-        public IEnumerator BackwardStep()
+        public IEnumerator BackwardStep(Mover mover)
         {
             // 뒷걸음질 치기는 병렬로 수행
-            _coroutineManager.StartCoroutine(MoveConstantVelocity(boss, new Vector2(0.0f, 0.75f), 360));
+            _coroutineManager.StartCoroutine(MoveConstantVelocity(mover, new Vector2(0.0f, 0.75f), 360));
 
             // 첫 탄 발사 전 딜레이
             const int interval = 45;
@@ -801,41 +832,41 @@ namespace Game
             const float angle = 0.75f;
             const float nwayAngleRange = 0.125f;
             Bullet b = GameSystem._Instance.CreateBullet<Bullet>();
-            b.Init(BulletName.red, boss._X, boss._Y, angle, 0.0f, speed, 0.0f);
+            b.Init(BulletName.red, mover._X, mover._Y, angle, 0.0f, speed, 0.0f);
             yield return new WaitForFrames(interval);
 
-            NWayBullet(boss, BulletName.red, angle, nwayAngleRange, speed, 2);
-            yield return new WaitForFrames(interval);
-
-            b = GameSystem._Instance.CreateBullet<Bullet>();
-            b.Init(BulletName.red, boss._X, boss._Y, angle, 0.0f, speed, 0.0f);
-            yield return new WaitForFrames(interval);
-
-            NWayBullet(boss, BulletName.red, angle, nwayAngleRange, speed, 2);
+            NWayBullet(mover, BulletName.red, angle, nwayAngleRange, speed, 2);
             yield return new WaitForFrames(interval);
 
             b = GameSystem._Instance.CreateBullet<Bullet>();
-            b.Init(BulletName.red, boss._X, boss._Y, angle, 0.0f, speed, 0.0f);
+            b.Init(BulletName.red, mover._X, mover._Y, angle, 0.0f, speed, 0.0f);
             yield return new WaitForFrames(interval);
 
-            NWayBullet(boss, BulletName.red, angle, nwayAngleRange, speed, 2);
+            NWayBullet(mover, BulletName.red, angle, nwayAngleRange, speed, 2);
+            yield return new WaitForFrames(interval);
+
+            b = GameSystem._Instance.CreateBullet<Bullet>();
+            b.Init(BulletName.red, mover._X, mover._Y, angle, 0.0f, speed, 0.0f);
+            yield return new WaitForFrames(interval);
+
+            NWayBullet(mover, BulletName.red, angle, nwayAngleRange, speed, 2);
             yield return new WaitForFrames(interval);
         }
 
         // 비둘기 솔로
-        public IEnumerator PigeonSolo()
+        public IEnumerator PigeonSolo(Mover mover)
         {
-            yield return _coroutineManager.StartCoroutine(MultipleSpiralBullets(boss, BulletName.blue, 0.0f, 0.02f, 0.01f, 4, 5, 193));
-            yield return _coroutineManager.StartCoroutine(MultipleSpiralBullets(boss, BulletName.blue, 0.0f, -0.02f, 0.01f, 4, 5, 193));
-            yield return _coroutineManager.StartCoroutine(BiDirectionalSpiralBullets(boss, BulletName.blue, 0.0f, 0.03f, -0.02f, 0.01f, 4, 5, 400));
+            yield return _coroutineManager.StartCoroutine(MultipleSpiralBullets(mover, BulletName.blue, 0.0f, 0.02f, 0.01f, 4, 5, 193));
+            yield return _coroutineManager.StartCoroutine(MultipleSpiralBullets(mover, BulletName.blue, 0.0f, -0.02f, 0.01f, 4, 5, 193));
+            yield return _coroutineManager.StartCoroutine(BiDirectionalSpiralBullets(mover, BulletName.blue, 0.0f, 0.03f, -0.02f, 0.01f, 4, 5, 400));
             yield return new WaitForFrames(90);
-            yield return _coroutineManager.StartCoroutine(BentSpiralBullets(boss, BulletName.red, 0.0f, 0.02f, 0.0f, 10, 10, -0.003f, 0.0002f, 400));
+            yield return _coroutineManager.StartCoroutine(BentSpiralBullets(mover, BulletName.red, 0.0f, 0.02f, 0.0f, 10, 10, -0.003f, 0.0002f, 400));
             yield return new WaitForFrames(20);
             // 중앙으로 이동
-            yield return _coroutineManager.StartCoroutine(MoveConstantVelocity(boss, new Vector2(0.0f, 0.0f), 180));
+            yield return _coroutineManager.StartCoroutine(MoveConstantVelocity(mover, new Vector2(0.0f, 0.0f), 180));
             yield return new WaitForFrames(30);
             // 랜덤 뿌리기
-            yield return _coroutineManager.StartCoroutine(RandomCircleBullets(boss, BulletName.blue, 0.01f, 3, 3, 150));
+            yield return _coroutineManager.StartCoroutine(RandomCircleBullets(mover, BulletName.blue, 0.01f, 3, 3, 150));
         }
         #endregion //Coroutine
 
@@ -856,38 +887,38 @@ namespace Game
         private readonly int _patternNoteCol = 7;
         private readonly int _patternNoteRow = 9;
 
-        public IEnumerator PatternA_11()
+        public IEnumerator Pattern_A_11(Mover mover)
         {
-            yield return _coroutineManager.StartCoroutine(PatternA_a1());
+            yield return _coroutineManager.StartCoroutine(PatternA_a1(mover));
             yield return new WaitForFrames(100);
-            yield return _coroutineManager.StartCoroutine(PatternA_b1());
+            yield return _coroutineManager.StartCoroutine(PatternA_b1(mover));
         }
 
-        public IEnumerator PatternA_22()
+        public IEnumerator PatternA_22(Mover mover)
         {
-            yield return _coroutineManager.StartCoroutine(PatternA_a2());
+            yield return _coroutineManager.StartCoroutine(PatternA_a2(mover));
             yield return new WaitForFrames(110);
-            yield return _coroutineManager.StartCoroutine(PatternA_b2());
+            yield return _coroutineManager.StartCoroutine(PatternA_b2(mover));
         }
 
-        public IEnumerator PatternA_a1()
+        public IEnumerator PatternA_a1(Mover mover)
         {
             const int interval = 5;
-            _coroutineManager.StartCoroutine(AimingLineBullets(boss, BulletName.red, 0.02f, interval, 5));
+            _coroutineManager.StartCoroutine(AimingLineBullets(mover, BulletName.red, 0.02f, interval, 5));
             yield return new WaitForFrames(50);
-            _coroutineManager.StartCoroutine(AimingLineBullets(boss, BulletName.red, 0.02f, interval, 5));
+            _coroutineManager.StartCoroutine(AimingLineBullets(mover, BulletName.red, 0.02f, interval, 5));
             yield return new WaitForFrames(50);
-            _coroutineManager.StartCoroutine(AimingNWayLineBullets(boss, BulletName.red, 0.02f, interval, 4, 0.125f, 3));
+            _coroutineManager.StartCoroutine(AimingNWayLineBullets(mover, BulletName.red, 0.02f, interval, 4, 0.125f, 3));
             yield return new WaitForFrames(25);
-            _coroutineManager.StartCoroutine(AimingNWayLineBullets(boss, BulletName.red, 0.02f, interval, 9, 0.125f, 3));
+            _coroutineManager.StartCoroutine(AimingNWayLineBullets(mover, BulletName.red, 0.02f, interval, 9, 0.125f, 3));
         }
 
-        public IEnumerator PatternA_b1()
+        public IEnumerator PatternA_b1(Mover mover)
         {
             const int circleInterval = 28;
-            _coroutineManager.StartCoroutine(RandomAngleCircleBullets(boss, BulletName.blue, 0.02f, 12, circleInterval, 7));
+            _coroutineManager.StartCoroutine(RandomAngleCircleBullets(mover, BulletName.blue, 0.02f, 12, circleInterval, 7));
             yield return new WaitForFrames(circleInterval / 2);
-            _coroutineManager.StartCoroutine(RandomAngleCircleBullets(boss, BulletName.blue, 0.02f, 12, circleInterval, 6));
+            _coroutineManager.StartCoroutine(RandomAngleCircleBullets(mover, BulletName.blue, 0.02f, 12, circleInterval, 6));
         }
 
         public IEnumerator Aiming2LineBullets(Mover mover, string shape, float speed, float gap, int interval, int repeatCount)
@@ -919,30 +950,30 @@ namespace Game
             }
         }
 
-        public IEnumerator PatternA_a2()
+        public IEnumerator PatternA_a2(Mover mover)
         {
             const int interval = 5;
-            _coroutineManager.StartCoroutine(Aiming2LineBullets(boss, BulletName.red, 0.02f, 0.15f, interval, 5));
+            _coroutineManager.StartCoroutine(Aiming2LineBullets(mover, BulletName.red, 0.02f, 0.15f, interval, 5));
             yield return new WaitForFrames(50);
-            _coroutineManager.StartCoroutine(AimingLineBullets(boss, BulletName.red, 0.02f, interval, 5));
+            _coroutineManager.StartCoroutine(AimingLineBullets(mover, BulletName.red, 0.02f, interval, 5));
             yield return new WaitForFrames(50);
-            _coroutineManager.StartCoroutine(Aiming2LineBullets(boss, BulletName.red, 0.02f, 0.15f, interval, 4));
+            _coroutineManager.StartCoroutine(Aiming2LineBullets(mover, BulletName.red, 0.02f, 0.15f, interval, 4));
             yield return new WaitForFrames(25);
-            _coroutineManager.StartCoroutine(AimingNWayLineBullets(boss, BulletName.red, 0.02f, interval, 9, 0.125f, 3));
+            _coroutineManager.StartCoroutine(AimingNWayLineBullets(mover, BulletName.red, 0.02f, interval, 9, 0.125f, 3));
         }
 
-        public IEnumerator PatternA_b2()
+        public IEnumerator PatternA_b2(Mover mover)
         {
             const int circleInterval = 28;
-            _coroutineManager.StartCoroutine(RandomAngleCircleBullets(boss, BulletName.blue, 0.02f, 12, circleInterval, 4));
+            _coroutineManager.StartCoroutine(RandomAngleCircleBullets(mover, BulletName.blue, 0.02f, 12, circleInterval, 4));
             yield return new WaitForFrames(circleInterval / 2);
-            _coroutineManager.StartCoroutine(RandomAngleCircleBullets(boss, BulletName.blue, 0.02f, 12, circleInterval, 4));
+            _coroutineManager.StartCoroutine(RandomAngleCircleBullets(mover, BulletName.blue, 0.02f, 12, circleInterval, 4));
             yield return new WaitForFrames(circleInterval * 4);
 
-            _coroutineManager.StartCoroutine(PatternBullets(boss, BulletName.blue, 0.75f, 0.02f, 4, _patternNote, _patternNoteCol, _patternNoteRow, 0.08f));
+            _coroutineManager.StartCoroutine(PatternBullets(mover, BulletName.blue, 0.75f, 0.02f, 4, _patternNote, _patternNoteCol, _patternNoteRow, 0.08f));
         }
 
-        public IEnumerator PatternB()
+        public IEnumerator PatternB(Mover mover)
         {
             const float rollingAngleRate = 0.02f;
             const float rollingAngleRange = 0.22f;
@@ -951,33 +982,33 @@ namespace Game
             const int rollingCount = 5;
 
             // 뿌리기
-            RandomSpreadBullet(boss, BulletName.red, 0.2f, 0.02f, 0.02f, 24);
+            RandomSpreadBullet(mover, BulletName.red, 0.2f, 0.02f, 0.02f, 24);
 
             // 반시계 회전
             yield return new WaitForFrames(100);
-            _coroutineManager.StartCoroutine(RollingNWayBullets(boss, BulletName.blue
+            _coroutineManager.StartCoroutine(RollingNWayBullets(mover, BulletName.blue
                 , 0.75f - rollingAngleOffset, rollingAngleRange, rollingAngleRate, 0.02f, rollingCount, 1, 5, rollingRepeatCount));
 
             // 뿌리기
             yield return new WaitForFrames(140);
-            RandomSpreadBullet(boss, BulletName.red, 0.2f, 0.02f, 0.02f, 24);
+            RandomSpreadBullet(mover, BulletName.red, 0.2f, 0.02f, 0.02f, 24);
 
             // 시계 회전
             yield return new WaitForFrames(100);
-            _coroutineManager.StartCoroutine(RollingNWayBullets(boss, BulletName.blue
+            _coroutineManager.StartCoroutine(RollingNWayBullets(mover, BulletName.blue
                 , 0.75f + rollingAngleOffset, rollingAngleRange, -rollingAngleRate, 0.02f, rollingCount, 1, 5, rollingRepeatCount));
         }
 
         /// <summary>
         /// 회전하며 조준탄 뿌린 후 랜덤이동
         /// </summary>
-        public IEnumerator PatternC_1()
+        public IEnumerator PatternC_1(Mover mover)
         {
             const float radius = 0.5f;
             const int repeatCount = 8;
             for (int i = 0; i < repeatCount; ++i)
             {
-                _coroutineManager.StartCoroutine(RollingAimingBullets(boss, BulletName.red, 0.02f, 18, radius, 1, 2));
+                _coroutineManager.StartCoroutine(RollingAimingBullets(mover, BulletName.red, 0.02f, 18, radius, 1, 2));
 
                 // 마지막 뿌리기 후에는 이동하지 않음
                 if (i < repeatCount - 1)
@@ -986,13 +1017,13 @@ namespace Game
                     Vector2 nextPos = new Vector2(
                         GameSystem._Instance.GetRandomRange(GameSystem._Instance._MinX + radius + 0.1f, GameSystem._Instance._MaxX - radius - 0.1f)
                         , GameSystem._Instance.GetRandomRange(GameSystem._Instance._MinY * 0.2f + radius + 0.1f, GameSystem._Instance._MaxY - radius - 0.1f));
-                    _coroutineManager.StartCoroutine(MoveDamp(boss, nextPos, 30, 0.1f));
+                    _coroutineManager.StartCoroutine(MoveDamp(mover, nextPos, 30, 0.1f));
                     yield return new WaitForFrames(60);
                 }
             }
         }
 
-        public IEnumerator PatternC_2()
+        public IEnumerator PatternC_2(Mover mover)
         {
             const float radius = 0.5f;
             const int repeatCount = 8;
@@ -1008,9 +1039,9 @@ namespace Game
             {
                 // 설치 원형탄 2개
                 float angle = 0.75f;
-                PlacedCircleBullet(boss, BulletName.blue, angle, speed1_Cirlce1, countPerCircle, false, moveDuaraion, stopDuaraion, angle2, speed2);
+                PlacedCircleBullet(mover, BulletName.blue, angle, speed1_Cirlce1, countPerCircle, false, moveDuaraion, stopDuaraion, angle2, speed2);
                 yield return new WaitForFrames(placeInterval);
-                PlacedCircleBullet(boss, BulletName.red, angle, speed1_Cirlce2, countPerCircle, true, moveDuaraion, stopDuaraion - placeInterval, angle2, speed2);
+                PlacedCircleBullet(mover, BulletName.red, angle, speed1_Cirlce2, countPerCircle, true, moveDuaraion, stopDuaraion - placeInterval, angle2, speed2);
 
                 // 마지막 뿌리기 후에는 이동하지 않음
                 if (i < repeatCount - 1)
@@ -1019,29 +1050,29 @@ namespace Game
                     Vector2 nextPos = new Vector2(
                         GameSystem._Instance.GetRandomRange(GameSystem._Instance._MinX + radius + 0.1f, GameSystem._Instance._MaxX - radius - 0.1f)
                         , GameSystem._Instance.GetRandomRange(GameSystem._Instance._MinY * 0.2f + radius + 0.1f, GameSystem._Instance._MaxY - radius - 0.1f));
-                    _coroutineManager.StartCoroutine(MoveDamp(boss, nextPos, 30, 0.1f));
+                    _coroutineManager.StartCoroutine(MoveDamp(mover, nextPos, 30, 0.1f));
                     yield return new WaitForFrames(60);
                 }
             }
         }
 
-        public IEnumerator PatternD_1()
+        public IEnumerator PatternD_1(Mover mover)
         {
-            yield return _coroutineManager.StartCoroutine(PatternD_1_Follow());
-            _coroutineManager.StartCoroutine(PatternD_1_Circle()); // 원형탄과 함께 따라다니기
-            yield return _coroutineManager.StartCoroutine(PatternD_1_Follow());
+            yield return _coroutineManager.StartCoroutine(PatternD_1_Follow(mover));
+            _coroutineManager.StartCoroutine(PatternD_1_Circle(mover)); // 원형탄과 함께 따라다니기
+            yield return _coroutineManager.StartCoroutine(PatternD_1_Follow(mover));
         }
 
         /// <summary>
         /// 캐릭터 따라가며 탄 설치
         /// </summary>
-        public IEnumerator PatternD_1_Follow()
+        public IEnumerator PatternD_1_Follow(Mover mover)
         {
             const float speed = 0.007f;
             const float maxAngleRate = 0.01f; // 최대 선회 각속도
             const int interval = 10; // 발사 간격
             const string shape = BulletName.blue;
-            float angle = GetPlayerAngle(boss);
+            float angle = GetPlayerAngle(mover);
 
             for (int i = 0; i < _patternDPartDuration; ++i)
             {
@@ -1049,11 +1080,11 @@ namespace Game
                 if (i % interval == 0)
                 {
                     AwayBullet b = GameSystem._Instance.CreateBullet<AwayBullet>();
-                    b.Init(shape, boss._X, boss._Y, 0.0f, 0.0f, 0.0f, 0.0f, _patternDPartDuration - i - 1, 0.03f);
+                    b.Init(shape, mover._X, mover._Y, 0.0f, 0.0f, 0.0f, 0.0f, _patternDPartDuration - i - 1, 0.03f);
                 }
 
                 // 선회 각속도 계산
-                float angleRate = GetPlayerAngle(boss) - angle;
+                float angleRate = GetPlayerAngle(mover) - angle;
                 // 선회 각속도를 0~1 범위로 제한
                 angleRate -= Mathf.Floor(angleRate);
 
@@ -1073,8 +1104,8 @@ namespace Game
 
                 // 계산한 각도를 사용해 좌표 갱신
                 float rad = angle * Mathf.PI * 2.0f;
-                boss._X += speed * Mathf.Cos(rad);
-                boss._Y += speed * Mathf.Sin(rad);
+                mover._X += speed * Mathf.Cos(rad);
+                mover._Y += speed * Mathf.Sin(rad);
 
                 yield return null;
             }
@@ -1083,24 +1114,24 @@ namespace Game
         /// <summary>
         /// 주기적으로 원형탄 발사
         /// </summary>
-        public IEnumerator PatternD_1_Circle()
+        public IEnumerator PatternD_1_Circle(Mover mover)
         {
             for (int i = 0; i < 14; ++i)
             {
-                CircleBullet(boss, BulletName.red, GameSystem._Instance.GetRandom01(), 0.01f, 6, true);
+                CircleBullet(mover, BulletName.red, GameSystem._Instance.GetRandom01(), 0.01f, 6, true);
                 yield return new WaitForFrames(60);
             }
         }
 
-        public IEnumerator PatternD_2()
+        public IEnumerator PatternD_2(Mover mover)
         {
             // 안전선 발사
             PatternD_2_SafetyLine();
             // 보스 기준위치로 이동
-            yield return _coroutineManager.StartCoroutine(MoveConstantVelocity(boss, new Vector2(0.0f, 0.75f), 240));
+            yield return _coroutineManager.StartCoroutine(MoveConstantVelocity(mover, new Vector2(0.0f, 0.75f), 240));
             yield return new WaitForFrames(240);
             // 반원 발사
-            yield return _coroutineManager.StartCoroutine(PatternD_2_HalfCirclePlaced());
+            yield return _coroutineManager.StartCoroutine(PatternD_2_HalfCirclePlaced(mover));
         }
 
         /// <summary>
@@ -1131,7 +1162,7 @@ namespace Game
         /// <summary>
         /// 반원 배치로 2단계 탄 발사
         /// </summary>
-        public IEnumerator PatternD_2_HalfCirclePlaced()
+        public IEnumerator PatternD_2_HalfCirclePlaced(Mover mover)
         {
             // 반원 배치로 빠르게 진행하다가 하단으로 천천히 떨어짐
             const float speed1 = 0.05f;
@@ -1151,7 +1182,7 @@ namespace Game
                     for (int i = 0; i < count; ++i)
                     {
                         PlacedBullet b = GameSystem._Instance.CreateBullet<PlacedBullet>();
-                        b.InitNoStop(shape, boss._X, boss._Y, startAngle + angleRange * ((float)i / (count - 1) - 0.5f), speed1
+                        b.InitNoStop(shape, mover._X, mover._Y, startAngle + angleRange * ((float)i / (count - 1) - 0.5f), speed1
                             , phase1Duration, 0.75f, speed2);
                     }
                 }

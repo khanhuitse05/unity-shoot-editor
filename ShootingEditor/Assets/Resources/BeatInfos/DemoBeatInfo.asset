@@ -9,11 +9,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cd53da55b847216498036b83a6045701, type: 3}
-  m_Name: IevanPolkka
+  m_Name: DemoBeatInfo
   m_EditorClassIdentifier: 
-  _namespace: IevanPolkka
-  _listPriority: 1
-  _title: Ievan Polkka
-  _author: Hatsune Miku, Otomania
+  _namespace: DemoBeatInfo
+  _listPriority: 0
+  _title: DemoBeatInfo
+  _author: PingAK
   _difficulty: 0
-  _length: 150
+  _length: 209

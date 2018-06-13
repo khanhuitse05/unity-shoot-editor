@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace Game
 {
-    namespace IevanPolkka
+    namespace DemoBeatInfo
     {
         // "이에반 폴카" 진행정보
         public class GameLogic : Game.BaseGameLogic
@@ -29,8 +29,6 @@ namespace Game
                 yield return null;
                 GameSystem._Instance.PoolStackShape(BulletName.blue, 270);
                 GameSystem._Instance.PoolStackShape(BulletName.red, 27);
-                
-                // 클래스 로딩
                 GameSystem._Instance.PoolStackMover<Bullet>(270);
 
                 // UI
