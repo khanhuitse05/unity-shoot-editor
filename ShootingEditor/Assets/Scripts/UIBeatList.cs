@@ -1,49 +1,31 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
-using System;
+using UnityEngine.SceneManagement;
 
-// 노래 목록 UI
-public class UIBeatList : UIWindow
+public class UIBeatList : MonoBehaviour
 {
-    [SerializeField]
-    private RectTransform _transContents;
-    [SerializeField]
-    private UIBeatReady _uiBeatReady;
+    public RectTransform _transContents;
+    public GameObject prefabItem;
+    private GameInfo[] _beatInfos;
+    public delegate void InfoSelectedHandler(int index); 
 
-    private BeatInfo[] _beatInfos; // 정렬된 정보들
-    public delegate void InfoSelectedHandler(int index); // 정보 선택되었을 때 호출될 함수 형식
-    private const string _uiTitle = "Beat List";
-    private const float _firstItemYOffset = -15.0f; // 첫 항목 상단 여백
-
-    protected override void OnAwake()
+    void Awake()
     {
-        base.OnAwake();
-        AddHeaderPanel(_uiTitle, OnBackClicked);
         BuildList();
     }
 
-    // 목록 구성하기
     private void BuildList()
     {
-        // 모든 노래 정보 구하기
-        _beatInfos = Resources.LoadAll<BeatInfo>(BeatInfo._resourcePath);
+        _beatInfos = Resources.LoadAll<GameInfo>(GameInfo._resourcePath);
         if (_beatInfos != null)
         {
-            // 정보 정렬
-            Array.Sort<BeatInfo>(_beatInfos, BeatInfo.CompareByListPriority);
-
-            // 정보별 항목 UI 만들기
-            float y = _firstItemYOffset;
-            UnityEngine.Object prefabItem = Resources.Load("UI/UIBeatListItem");
+            float y = -15.0f;
             for (int i = 0; i < _beatInfos.Length; ++i)
             {
-                BeatInfo beatInfo = _beatInfos[i];
+                GameInfo beatInfo = _beatInfos[i];
                 GameObject objItem = Instantiate(prefabItem) as GameObject;
                 objItem.name = prefabItem.name + "_" + beatInfo.name;
                 objItem.transform.SetParent(_transContents.transform, false);
                 
-                // Y 위치 재지정
-                // http://orbcreation.com/orbcreation/page.orb?1099 참고
                 RectTransform trans = objItem.GetComponent<RectTransform>();
                 trans.localScale = Vector3.one;
                 trans.localPosition = new Vector3(
@@ -67,36 +49,16 @@ public class UIBeatList : UIWindow
         } // if (beatInfos != null)
     }
 
-    public override bool OnKeyInput()
-    {
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            LoadTitleScene();
-        }
-        return true;
-    }
-
-    // Back 버튼이 클릭되었을 때
-    public void OnBackClicked()
-    {
-        LoadTitleScene();
-    }
-
-    /// <summary>
-    /// 타이틀 씬으로 돌아감
-    /// </summary>
-    private void LoadTitleScene()
-    {
-        Application.LoadLevel(SceneName.title);
-    }
-
-    /// <summary>
-    /// 정보가 선택되었을 때
-    /// </summary>
-    /// <param name="index">몇 번째 정보인가?</param>
     private void OnInfoSelected(int index)
     {
-        //Debug.Log("[UIBeatList] [" + index.ToString() + "] " + _beatInfos[index]._title + " selcted");
-        _uiBeatReady.Open(_beatInfos[index]);
+        Game.GameSystem._loadGameInfo = _beatInfos[index];
+        if (_beatInfos[index].name == "Demo")
+        {
+            SceneManager.LoadScene("Demo");
+        }
+        else
+        {
+            SceneManager.LoadScene(SceneName.stage);
+        }
     }
 }
