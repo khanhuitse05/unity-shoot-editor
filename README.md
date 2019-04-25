@@ -21,7 +21,7 @@ Lưu ý: với cách này thì nếu class này chưa được hoặc không s�
 - Decorator pattern cho phép người dùng thêm các tính năng mới vào một đối tượng đã có mà không làm thay đổi cấu trúc lớp của nó.
 ### Ví dụ
 - Tuỳ thuộc vào đối tượng nào, hoặc level của súng là bao nhiêu mà số lượng và các loại súng đạn sẽ khác nhau, Thay vì chúng ta tạo ra lớp trừu tượng rồi kế thừa vào override lại hàm shot. Ta sẽ áp dụng decorator pattern
-+ 1.  Tạo lớp trừu tượng và lớp trang trí
+1.  Tạo lớp trừu tượng và lớp trang trí
 ``` csharp
 abstract class Component
 {
@@ -50,7 +50,7 @@ abstract class GunDecorator : Component
     }
 }
 ```
-+ 2. Tạo ra các đối tượng Decorator: Normal gun, Wing gun và Missiles gun
+2. Tạo ra các đối tượng Decorator: Normal gun, Wing gun và Missiles gun
 ``` csharp
 class NormalGun : GunDecorator
 {   
@@ -77,7 +77,7 @@ class MissilesGun : GunDecorator
     }
 }
 ```
-+ 3 Sử dụng 
+3. Sử dụng 
 ``` csharp
 public class Player : Mover
 {
