@@ -316,3 +316,5 @@ partial class Player : Mover
     }
 }
 ```
+## 10. Composite Pattern
+- Tổ chức các đối tượng theo cấu trúc phân cấp dạng cây. Tất cả các đối tượng trong cấu trúc được thao tác theo một cách thuần nhất như nhau.
