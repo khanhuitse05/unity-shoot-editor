@@ -111,7 +111,7 @@ public class Player : Mover
 }
 ```
 + 4. Sau khi chạy chương trình thì ta sẽ được kết quả như sau
-![Screeshot](https://github.com/PingAK9/ShootEditor/Image/master/Images/gundecorator.png)
+![Decorator](https://github.com/PingAK9/ShootEditor/blob/master/Image/gundecorator.png)
 
 ## 3. Factory pattern
 - Factory pattern Nhằm giải quyết vấn đề tạo một đối tượng mà không cần thiết chỉ ra một cách chính xác lớp nào sẽ được tạo
