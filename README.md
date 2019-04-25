@@ -221,27 +221,98 @@ void AddShotBuilder(String name)
     }
 }
 ```
-## 4. Object Pool pattern
-- Object Pool pattern
+## 5. Object Pool pattern
+- Chúng ta dùng Object Pool Pattern quản lý một tập hợp các objects mà sẽ được tái sử dụng trong chương trình. Chúng được gọi ra từ pool, sử dụng trong một khoảng thời gian nhất định rồi trả về pool. Trong khoảng thời gian vắng mặt đó của object, không thành phần nào có thể sử dụng tận khi nó được quay trở về pool.
 ### Ví dụ
-
-## 5. Decorator pattern
-- Decorator pattern
-### Ví dụ
-
+- Các đội tượng kế từ từ class mover: Bullet, Player, Enemy, Boss
+ -> ShapePool.cs
+- Các Sprite render để vẽ các đối tượng trên 
+ -> MoverPool.cs
 ## 6. Template pattern
-- Decorator pattern
+- Template pattern method định nghĩa một bộ khung của một thuật toán trong một chức năng, chuyển giao việc thực hiện nó cho các lớp con. Mẫu Template Method cho phép lớp con định nghĩa lại cách thực hiện của một thuật toán, mà không phải thay đổi cấu trúc thuật toán
 ### Ví dụ
+- Tạo ra gamelogic và boss khác nhau cho mỗi round.
+``` csharp
+public abstract partial class BaseGameLogic
+{
+    abstract void LoadContext();
 
-## 7. Builder pattern
-- Decorator pattern
+    abstract IEnumerator UpdateGamePlay();
+    
+    abstract void GameOver();
+}
+```
+- Ta tạo ra temlate cho class GameLogic, với các hàm LoadContext, Update, và callback GameOver.
+- Giờ chúng ta tuỳ chỉnh các hàm này tuỳ theo mỗi round, Ví dụ Round1
+``` csharp
+public class GameLogic_Round1 : BaseGameLogic
+{
+    void LoadContext()
+    {
+        //LoadData Round1
+        // Init boss1
+    }
+
+    IEnumerator UpdateGamePlay()
+    {
+        // Update round 1   
+    }
+    ///
+    ...
+}
+```
+
+## 7. State pattern
+- State Pattern là cách tổ chức quản lý các State một cách hợp lý nhất. Giảm bớt rắc rối trong quá trình xử lý các sự kiện. Dễ dàng chỉnh sửa trong quá trình lập trình.
 ### Ví dụ
+- Qua ví dụ trước (Template pattern) chúng ta đã tạo ra Template GameLogic, giờ sẽ áp dụng State pattern để sử dụng nó.
+1. Đầu tiên, các bạn phải xác định được các State của đối tượng và tạo Enum cho các State đó.
+``` csharp
+enum StateType
+{
+    Invalid,
+    Load,
+    Play,
+    over,
+}
+```
+2. Áp dụng vào trong class đối tượng GameSystem.cs 
+``` csharp
+partial class GameSystem : MonoBehaviour
+{
+    private StateType stateType = StateType.Invalid;
+    private void SetState(StateType nextState)
+    {
+        stateType = nextState;
+        switch (stateType)
+        {
+            case StateType.Load:
+                logic.LoadContext();
+                break;
+            case StateType.Play:
+                StartCoroutine(logic.UpdateGamePlay());
+                break;
+            case StateType.Over:
+                logic.GameOver();
+                break;
+        }
+    }
+}
+```
+## 8. Builder pattern
+- Khi một object có nhiều parameter, thì việc tạo một object có nhiều parameter hoặc nhiều constructor sẽ làm cho code chúng ta trông khá là rườm rà và dễ gây lỗi (chúng ta sẽ vất vả nhưng hiệu quả không cao). Builder là một thiết kế giúp việc tạo một object phức tạp bằng nhiều object đơn giản.
 
-## 8. Observer pattern
-- Decorator pattern
+## 9. Observer pattern
+- Observer pattern là một mẫu thiết kế phần mềm mà một đối tượng, gọi là subject, duy trì một danh sách các thành phần phụ thuộc nó, gọi là observer, và thông báo tới chúng một cách tự động về bất cứ thay đổi nào, thường thì bằng cách gọi 1 hàm của chúng.
 ### Ví dụ
-
-## 9. State pattern
-- Decorator pattern
-### Ví dụ
-
+- Điều kiện để thua 1 round là khi player chết, còn khi thắng 1 round là khi boss chết. 
+- Ví dụ áp dụng Observer pattern vào kiểm tra round thua. khi đó player là subject, gameSystem là observer
+``` csharp
+partial class Player : Mover
+{
+    private void OnDead()
+    {
+        GameSystem.GetInstance.PlayerDead();
+    }
+}
+```
